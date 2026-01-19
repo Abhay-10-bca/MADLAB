@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopping App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+        }
+        .section {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .item {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            background: #fafafa;
+        }
+        button {
+            padding: 8px 12px;
+            margin: 5px 2px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn-add { background-color: #28a745; color: white; }
+        .btn-wish { background-color: #ffc107; color: black; }
+        .btn-sale { background-color: #dc3545; color: white; }
+        .btn-remove { background-color: #6c757d; color: white; }
+        h2 { margin-top: 0; }
+        .count { font-weight: bold; color: #007bff; }
+    </style>
+</head>
+<body>
+    <h1>Shopping Application</h1>
+    
+    <div class="container">
+        <!-- Products Section -->
+        <div class="section">
+            <h2>Products</h2>
+            <div id="products"></div>
+        </div>
+
+        <!-- Cart Section -->
+        <div class="section">
+            <h2>Shopping Bag <span class="count" id="cartCount">(0)</span></h2>
+            <div id="cart"></div>
+        </div>
+
+        <!-- Wishlist Section -->
+        <div class="section">
+            <h2>Wishlist <span class="count" id="wishCount">(0)</span></h2>
+            <div id="wishlist"></div>
+        </div>
+    </div>
+
+    <script>
+        let products = [
+            { id: 1, name: 'Product A', price: 100 },
+            { id: 2, name: 'Product B', price: 200 },
+            { id: 3, name: 'Product C', price: 150 }
+        ];
+        let cart = [];
+        let wishlist = [];
+        let saleApplied = {};
+
+        function renderProducts() {
+            const container = document.getElementById('products');
+            container.innerHTML = products.map(p => `
+                <div class="item">
+                    <strong>${p.name}</strong><br>
+                    Price: $${p.price}
+                    <br>
+                    <button class="btn-add" onclick="addToBag(${p.id})">Add to Bag</button>
+                    <button class="btn-wish" onclick="moveToWishlist(${p.id})">Wishlist</button>
+                    <button class="btn-sale" onclick="add1Plus1Sale(${p.id})">1+1 Sale</button>
+                </div>
+            `).join('');
+        }
+
+        function addToBag(productId) {
+            const product = products.find(p => p.id === productId);
+            cart.push({ ...product, cartId: Date.now() });
+            renderCart();
+        }
+
+        function moveToWishlist(productId) {
+            const product = products.find(p => p.id === productId);
+            wishlist.push(product);
+            renderWishlist();
+        }
+
+        function add1Plus1Sale(productId) {
+            const product = products.find(p => p.id === productId);
+            const discountedPrice = Math.floor(product.price / 2);
+            cart.push({ ...product, price: discountedPrice, cartId: Date.now(), sale: true });
+            saleApplied[productId] = true;
+            renderCart();
+        }
+
+        function removeFromCart(cartId) {
+            cart = cart.filter(item => item.cartId !== cartId);
+            renderCart();
+        }
+
+        function removeFromWishlist(productId) {
+            wishlist = wishlist.filter(item => item.id !== productId);
+            renderWishlist();
+        }
+
+        function renderCart() {
+            const container = document.getElementById('cart');
+            document.getElementById('cartCount').textContent = `(${cart.length})`;
+            container.innerHTML = cart.length === 0 ? '<p>Cart is empty</p>' : 
+                cart.map((item, idx) => `
+                    <div class="item">
+                        ${item.name}<br>
+                        $${item.price} ${item.sale ? '<span style="color:red;">[1+1 SALE]</span>' : ''}
+                        <br>
+                        <button class="btn-remove" onclick="removeFromCart(${item.cartId})">Remove</button>
+                    </div>
+                `).join('');
+        }
+
+        function renderWishlist() {
+            const container = document.getElementById('wishlist');
+            document.getElementById('wishCount').textContent = `(${wishlist.length})`;
+            container.innerHTML = wishlist.length === 0 ? '<p>Wishlist is empty</p>' :
+                wishlist.map(item => `
+                    <div class="item">
+                        ${item.name} - $${item.price}
+                        <br>
+                        <button class="btn-remove" onclick="removeFromWishlist(${item.id})">Remove</button>
+                    </div>
+                `).join('');
+        }
+
+        renderProducts();
+    </script>
+</body>
+</html>
